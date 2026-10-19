@@ -1,0 +1,1 @@
+# Code-for-computing-the-determinant-of-traces-of-Hecke-operators
