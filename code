@@ -1,0 +1,42 @@
+from sage.all import CuspForms, QQ, ZZ, factorial, matrix
+
+def D_squared(k, m):
+    """Exact D_{k,m}^2 from (7.7), for dim(S_k) = 2 or 3."""
+    k, m = ZZ(k), ZZ(m)
+    if k < 2 or k % 2:
+        raise ValueError("k must be an even integer at least 2")
+    if m not in (1, 2):
+        raise ValueError("m must be 1 or 2")
+
+    S = CuspForms(1, k, base_ring=QQ)
+    d = S.dimension()
+    if d not in (2, 3):
+        raise ValueError("This formula requires dim(S_k) = 2 or 3")
+
+    # Usual, unnormalized Hecke operators T_{j^m}.
+    T = [S.hecke_matrix(j**m) for j in range(1, d + 1)]
+
+    # G[a-1,b-1] = Tr(T_{a^m} T_{b^m}).
+    G = matrix(QQ, d, d, lambda i, j: (T[i] * T[j]).trace())
+
+    return QQ(G.det()) / factorial(d)**(m * (k - 1))
+
+
+def floor16_D_squared(k, m):
+    return ZZ((16 * D_squared(k, m)).floor())
+
+
+# Reproduce Table (7.8).
+blocks = [
+    (2, [24, 28, 30, 32, 34, 38]),
+    (3, [36, 40, 42, 44, 46, 50]),
+]
+
+for d, weights in blocks:
+    print("d =", d)
+    print(" k    m=1    m=2")
+    for k in weights:
+        v1 = floor16_D_squared(k, 1)
+        v2 = floor16_D_squared(k, 2)
+        print("{:2d}   {:4d}   {:4d}".format(k, int(v1), int(v2)))
+    print()
